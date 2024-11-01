@@ -1,8 +1,8 @@
 ## AWS Lambda Developer Guide
 
-This repository contains the Markdown version of the AWS Lambda Developer Guide and sample applications that you can deploy to learn about Lambda concepts and features.
-
-Table of contents: [index.md](/doc_source/index.md)
+- Markdown version of the AWS Lambda Developer Guide
+  - [index.md](/doc_source/index.md) 
+- if you want to check sample applications, templates & IAM policies -> check better main branch
 
 ## License Summary
 
