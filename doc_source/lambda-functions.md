@@ -1,14 +1,60 @@
 # Managing AWS Lambda functions<a name="lambda-functions"></a>
 
-You can use the AWS Lambda API or console to configure settings on your Lambda functions\. [Basic function settings](configuration-console.md) include the description, role, and runtime that you specify when you create a function in the Lambda console\. You can configure more settings after you create a function, or use the API to set things like the handler name, memory allocation, and security groups during creation\.
+* settings
+  * ways to configure settings | your Lambda functions
+    * AWS Lambda API
+    * AWS console
+  * [Basic function settings](configuration-console.md)
+    * description,
+    * role,
+    * runtime / you specify | you create a function | Lambda console
+  * other settings
+    * handler name,
+    * memory allocation,
+    * security groups
 
-To keep secrets out of your function code, store them in the function's configuration and read them from the execution environment during initialization\. [Environment variables](configuration-envvars.md) are always encrypted at rest, and can be encrypted client\-side as well\. Use environment variables to make your function code portable by removing connection strings, passwords, and endpoints for external resources\.
+* way to keep secrets -- out of -- your function code
+  * store them | function's configuration
+  * read them -- from the -- execution [Environment variables](configuration-envvars.md) | initialization
+    * ALWAYS encrypted | rest,
+    * can be encrypted | client-side
+    * uses
+      * make your function code portable -- by -- removing
+        * connection strings,
+        * passwords,
+        * endpoints | external resources
 
-[Versions and aliases](configuration-versions.md) are secondary resources that you can create to manage function deployment and invocation\. Publish [versions](configuration-versions.md) of your function to store its code and configuration as a separate resource that cannot be changed, and create an [alias](configuration-aliases.md) that points to a specific version\. Then you can configure your clients to invoke a function alias, and update the alias when you want to point the client to a new version, instead of updating the client\.
+* [Versions and aliases](configuration-versions.md)
+  * == secondary resources / you can create to manage
+    * function deployment
+    * invocation
+  * [versions](configuration-versions.md) of your function
+    * store separately, its
+      * code
+      * configuration
+  * [alias](configuration-aliases.md)
+    * -- can point to a -- specific version
+    * allows
+      * configuring your clients easily
 
-As you add libraries and other dependencies to your function, creating and uploading a deployment package can slow down development\. Use [layers](configuration-layers.md) to manage your function's dependencies independently and keep your deployment package small\. You can also use layers to share your own libraries with other customers and use publicly available layers with your functions\.
+* [layers](configuration-layers.md)
+  * allows
+    * managing your function's dependencies -- independently of the -- functions 
+      * -> 👀keep your deployment package small 👀
+    * sharing your own libraries
+    * using publicly available layers
 
-To use your Lambda function with AWS resources in an Amazon VPC, configure it with security groups and subnets to [create a VPC connection](configuration-vpc.md)\. Connecting your function to a VPC lets you access resources in a private subnet such as relational databases and caches\. You can also [create a database proxy](configuration-database.md) for MySQL and Aurora DB instances\. A database proxy enables a function to reach high concurrency levels without exhausting database connections\.
+* if you want to use your Lambda function -- with -- AWS resources | Amazon VPC
+  * [create a VPC connection](configuration-vpc.md)
+    * configure it with
+      * security groups
+      * subnets
+  * resources | private subnet / Lambda function has got access
+    * relational databases
+    * caches
+  * [create a database proxy](configuration-database.md) -- for -- DB instances
+    * MySQL 
+    * Aurora
 
 **Topics**
 + [Configuring functions in the AWS Lambda console](configuration-console.md)
