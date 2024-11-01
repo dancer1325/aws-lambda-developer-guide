@@ -2,9 +2,18 @@
 
 This repository contains additional resources for the AWS Lambda developer guide.
 
-- [iam-policies](./iam-policies) - Sample permissions policies for cross-service use cases.
-- [sample-apps](./sample-apps) - Sample applications that demonstrate features and use cases for the AWS Lambda service and managed runtimes.
-- [templates](./templates) - AWS CloudFormation templates for creating functions and VPC network resources.
+- [iam-policies](./iam-policies)
+  - Sample permissions policies -- for -- cross-service use cases
+- [sample-apps](./sample-apps)
+  - Sample applications / use
+    - AWS Lambda service
+    - managed runtimes
+- [templates](./templates)
+  - AWS CloudFormation templates -- for creating --
+    - functions
+    - VPC network resources
+- documentation
+  - ⭐️check in master branch ⭐️
 
 ## License Summary
 
