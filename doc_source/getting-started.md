@@ -1,12 +1,31 @@
 # Getting started with AWS Lambda<a name="getting-started"></a>
 
-To get started with AWS Lambda, use the Lambda console to create a function\. In a few minutes, you can create a function, invoke it, and view logs, metrics, and trace data\. 
+* goal
+  * -- via -- the Lambda console
+    * create a function,
+    * invoke it,
+    * view 
+      * logs,
+      * metrics,
+    * trace data 
 
-**Note**  
-To use Lambda and other AWS services, you need an AWS account\. If you don't have an account, visit [aws\.amazon\.com](https://aws.amazon.com/) and choose **Create an AWS Account**\. For detailed instructions, see [Create and activate an AWS account](https://aws.amazon.com/premiumsupport/knowledge-center/create-and-activate-aws-account/)\.  
-As a best practice, you should also create an AWS Identity and Access Management \(IAM\) user with administrator permissions and use that for all work that does not require root credentials\. Create a password for console access, and access keys to use command line tools\. See [Creating your first IAM admin user and group](https://docs.aws.amazon.com/IAM/latest/UserGuide/getting-started_create-admin-group.html) in the *IAM User Guide* for instructions\.
+* requirements
+  * AWS account
+    * see [Create and activate an AWS account](https://aws.amazon.com/premiumsupport/knowledge-center/create-and-activate-aws-account/)
+  * see [Creating your first IAM admin user and group](https://docs.aws.amazon.com/IAM/latest/UserGuide/getting-started_create-admin-group.html) 
 
-You can author functions in the Lambda console—or with an IDE toolkit, command line tools, or SDKs\. The Lambda console provides a [code editor](code-editor.md) for noncompiled languages that lets you modify and test code quickly\. The [AWS CLI](gettingstarted-awscli.md) gives you direct access to the Lambda API for advanced configuration and automation use cases\.
+* ways to author Lambda functions
+  * Lambda console
+    * provides
+      * [code editor](code-editor.md) for noncompiled languages / lets you
+        * modify code
+        * test code quickly
+  * IDE toolkit,
+  * CL tools,
+    * [AWS CLI](gettingstarted-awscli.md)
+      * lets you
+        * -- direct access to the -- Lambda API 
+  * SDKs 
 
 **Topics**
 + [Create a Lambda function with the console](getting-started-create-function.md)
