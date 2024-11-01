@@ -1,90 +1,92 @@
-# Using AWS Lambda with the AWS Command Line Interface<a name="gettingstarted-awscli"></a>
+# Using AWS Lambda -- via -- AWS CLI <a name="gettingstarted-awscli"></a>
 
-You can use the AWS Command Line Interface to manage functions and other AWS Lambda resources\. The AWS CLI uses the AWS SDK for Python \(Boto\) to interact with the Lambda API\. You can use it to learn about the API, and apply that knowledge in building applications that use Lambda with the AWS SDK\.
+* goal here
+  * manage & invoke Lambda functions -- via -- AWS CLI
 
-In this tutorial, you manage and invoke Lambda functions with the AWS CLI\.
+* AWS CLI
+  * 👀interact -- via, AWS SDK for Python -- with the Lambda API 👀
 
 ## Prerequisites<a name="with-userapp-walkthrough-custom-events-deploy"></a>
 
-This tutorial assumes that you have some knowledge of basic Lambda operations and the Lambda console\. If you haven't already, follow the instructions in [Getting started with AWS Lambda](getting-started.md) to create your first Lambda function\.
+* syntax structure of the next commands / added here
 
-To follow the procedures in this guide, you will need a command line terminal or shell to run commands\. Commands are shown in listings preceded by a prompt symbol \($\) and the name of the current directory, when appropriate:
+    ```
+    ~/lambda-project$ this is a command
+    this is output
+    ```
 
-```
-~/lambda-project$ this is a command
-this is output
-```
-
-For long commands, an escape character \(`\`\) is used to split a command over multiple lines\.
-
-On Linux and macOS, use your preferred shell and package manager\. On Windows 10, you can [install the Windows Subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/install-win10) to get a Windows\-integrated version of Ubuntu and Bash\.
-
-This tutorial uses the AWS Command Line Interface \(AWS CLI\) to call service API operations\. To install the AWS CLI, see [Installing the AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html) in the AWS Command Line Interface User Guide\.
+* | Windows 10
+  * recommended to [install the Windows Subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/install-win10)
+* [install the AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html)
 
 ## Create the execution role<a name="with-userapp-walkthrough-custom-events-create-iam-role"></a>
 
-Create the [execution role](lambda-intro-execution-role.md) that gives your function permission to access AWS resources\. To create an execution role with the AWS CLI, use the `create-role` command\.
+* `aws iam create-role `
+  * create the [execution role](lambda-intro-execution-role.md)
+  * [trust policy](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_terms-and-concepts.html) -- for the -- role
+    * ways to specify
+      * `file://pathToTheFile`
+        * == -- via -- file
+      * inline 
+  * _Example1:_ specify trust policy -- via -- `file`
 
-```
-$ aws iam create-role --role-name lambda-ex --assume-role-policy-document file://trust-policy.json
-{
-    "Role": {
-        "Path": "/",
-        "RoleName": "lambda-ex",
-        "RoleId": "AROAQFOXMPL6TZ6ITKWND",
-        "Arn": "arn:aws:iam::123456789012:role/lambda-ex",
-        "CreateDate": "2020-01-17T23:19:12Z",
-        "AssumeRolePolicyDocument": {
+      ```
+      $ aws iam create-role --role-name lambda-ex --assume-role-policy-document file://trust-policy.json
+      {
+          "Role": {
+              "Path": "/",
+              "RoleName": "lambda-ex",
+              "RoleId": "AROAQFOXMPL6TZ6ITKWND",
+              "Arn": "arn:aws:iam::123456789012:role/lambda-ex",
+              "CreateDate": "2020-01-17T23:19:12Z",
+              "AssumeRolePolicyDocument": {
+                  "Version": "2012-10-17",
+                  "Statement": [
+                      {
+                          "Effect": "Allow",
+                          "Principal": {
+                              "Service": "lambda.amazonaws.com"
+                          },
+                          "Action": "sts:AssumeRole"
+                      }
+                  ]
+              }
+          }
+      }
+      ```
+
+      * `trust-policy.json`
+        * _Example:_ 
+
+          ```
+          {
             "Version": "2012-10-17",
             "Statement": [
-                {
-                    "Effect": "Allow",
-                    "Principal": {
-                        "Service": "lambda.amazonaws.com"
-                    },
-                    "Action": "sts:AssumeRole"
-                }
+              {
+                "Effect": "Allow",
+                "Principal": {
+                  "Service": "lambda.amazonaws.com"
+                },
+                "Action": "sts:AssumeRole"
+              }
             ]
-        }
-    }
-}
-```
+          }
+          ```
+  * _Example2:_ specify trust policy -- via -- inline
+      ```
+       $ aws iam create-role --role-name lambda-ex --assume-role-policy-document '{"Version": "2012-10-17","Statement": [{ "Effect": "Allow", "Principal": {"Service": "lambda.amazonaws.com"}, "Action": "sts:AssumeRole"}]}'
+      ```
 
-The `trust-policy.json` file is a JSON file in the current directory that defines the [trust policy](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_terms-and-concepts.html) for the role\. This trust policy allows Lambda to use the role's permissions by giving the service principal `lambda.amazonaws.com` permission to call the AWS Security Token Service `AssumeRole` action\.
-
-**Example trust\-policy\.json**  
-
-```
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Principal": {
-        "Service": "lambda.amazonaws.com"
-      },
-      "Action": "sts:AssumeRole"
-    }
-  ]
-}
-```
-
-You can also specify the trust policy inline\. Requirements for escaping quotes in the JSON string vary depending on your shell\.
-
-```
-$ aws iam create-role --role-name lambda-ex --assume-role-policy-document '{"Version": "2012-10-17","Statement": [{ "Effect": "Allow", "Principal": {"Service": "lambda.amazonaws.com"}, "Action": "sts:AssumeRole"}]}'
-```
-
-To add permissions to the role, use the `attach-policy-to-role` command\. Start by adding the `AWSLambdaBasicExecutionRole` managed policy\.
-
-```
-$ aws iam attach-role-policy --role-name lambda-ex --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
-```
-
-The **AWSLambdaBasicExecutionRole** policy has the permissions that the function needs to write logs to CloudWatch Logs\.
+* `aws iam attach-policy-to-role`
+  * add permissions | role
+  * _Example:_
+    ```
+    $ aws iam attach-role-policy --role-name lambda-ex --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+    ```
 
 ## Create the function<a name="with-userapp-walkthrough-custom-events-upload"></a>
 
+* TODO:
 The following example logs the values of environment variables and the event object\.
 
 **Example index\.js**  
