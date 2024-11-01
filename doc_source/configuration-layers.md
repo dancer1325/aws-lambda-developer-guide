@@ -1,17 +1,42 @@
 # AWS Lambda layers<a name="configuration-layers"></a>
 
-You can configure your Lambda function to pull in additional code and content in the form of layers\. A layer is a ZIP archive that contains libraries, a [custom runtime](runtimes-custom.md), or other dependencies\. With layers, you can use libraries in your function without needing to include them in your deployment package\.
+* AWS Lambda layers
+  * := ZIP archive /
+    * contains
+      * libraries,
+      * [custom runtime](runtimes-custom.md)
+      * other dependencies 
+    * allows
+      * pulling additional
+        * code
+        * content 
+    * 👀NOT included | your deployment package 👀
+      * -> deployment package kept small 
+        * <= 3 MB
+  * possible ones
+    * create them
+    * use those / -- published by --
+      * AWS 
+      * other AWS customers
+  * support [resource\-based policies](#configuration-layers-permissions) -- for granting -- layer usage permissions -- to -- 
+    * specific
+      * AWS accounts,
+      * [AWS Organizations](https://docs.aws.amazon.com/organizations/latest/userguide/)
+    * ALL accounts
+  * extracted | `/opt` directory | function execution environment
+    * different location | `/opt` -- based on the -- language [Structure your layer](#configuration-layers-path) 
 
-Layers let you keep your deployment package small, which makes development easier\. You can avoid errors that can occur when you install and package dependencies with your function code\. For Node\.js, Python, and Ruby functions, you can [develop your function code in the Lambda console](code-editor.md) as long as you keep your deployment package under 3 MB\.
+* Lambda function
+  * can use <= 5 layers | time
+  * unzipped size of the function + ALL layers <= unzipped deployment package size = 250 MB
+    * see [AWS Lambda limits](gettingstarted-limits.md)
 
-**Note**  
-A function can use up to 5 layers at a time\. The total unzipped size of the function and all layers can't exceed the unzipped deployment package size limit of 250 MB\. For more information, see [AWS Lambda limits](gettingstarted-limits.md)\.
-
-You can create layers, or use layers published by AWS and other AWS customers\. Layers support [resource\-based policies](#configuration-layers-permissions) for granting layer usage permissions to specific AWS accounts, [AWS Organizations](https://docs.aws.amazon.com/organizations/latest/userguide/), or all accounts\.
-
-Layers are extracted to the `/opt` directory in the function execution environment\. Each runtime looks for libraries in a different location under `/opt`, depending on the language\. [Structure your layer](#configuration-layers-path) so that function code can access libraries without additional configuration\.
-
-You can also use AWS Serverless Application Model \(AWS SAM\) to manage layers and your function's layer configuration\. For instructions, see [Declaring serverless resources](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-template.html) in the *AWS Serverless Application Model Developer Guide*\.
+* AWS SAM
+  * allows
+    * managing 
+      * layers
+      * your function's layer configuration
+  * see [Declaring serverless resources](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-template.html)
 
 **Topics**
 + [Configuring a function to use layers](#configuration-layers-using)
@@ -23,6 +48,7 @@ You can also use AWS Serverless Application Model \(AWS SAM\) to manage layers a
 
 ## Configuring a function to use layers<a name="configuration-layers-using"></a>
 
+* TODO:
 You can specify up to 5 layers in your function's configuration, during or after function creation\. You choose a specific version of a layer to use\. If you want to use a different version later, update your function's configuration\.
 
 To add layers to your function, use the `update-function-configuration` command\. The following example adds two layers: one from the same account as the function, and one from a different account\.
@@ -255,10 +281,11 @@ When you update your dependencies and deploy, AWS SAM creates a new version of t
 
 ## Sample applications<a name="configuration-layers-samples"></a>
 
-The GitHub repository for this guide provides [sample applications](lambda-samples.md) that demonstrate the use of layers for dependency management\.
-+ **Node\.js** – [blank\-nodejs](https://github.com/awsdocs/aws-lambda-developer-guide/tree/master/sample-apps/blank-nodejs)
-+ **Python** – [blank\-python](https://github.com/awsdocs/aws-lambda-developer-guide/tree/master/sample-apps/blank-python)
-+ **Ruby** – [blank\-ruby](https://github.com/awsdocs/aws-lambda-developer-guide/tree/master/sample-apps/blank-ruby)
-+ **Java** – [blank\-java](https://github.com/awsdocs/aws-lambda-developer-guide/tree/master/sample-apps/blank-java)
-
-For more information about the blank sample app, see [Blank function sample application for AWS Lambda](samples-blank.md)\.
+* [sample applications](lambda-samples.md)
+  * goal
+    * use of layers -- for -- dependency management
+  + **Node\.js** – [blank\-nodejs](https://github.com/awsdocs/aws-lambda-developer-guide/tree/master/sample-apps/blank-nodejs)  
+  + **Python** – [blank\-python](https://github.com/awsdocs/aws-lambda-developer-guide/tree/master/sample-apps/blank-python)
+  + **Ruby** – [blank\-ruby](https://github.com/awsdocs/aws-lambda-developer-guide/tree/master/sample-apps/blank-ruby)
+  + **Java** – [blank\-java](https://github.com/awsdocs/aws-lambda-developer-guide/tree/master/sample-apps/blank-java)
+* see [Blank function sample application for AWS Lambda](samples-blank.md)
