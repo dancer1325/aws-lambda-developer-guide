@@ -31,8 +31,17 @@
 * uses
   * configure
     * triggers,
-    * layers,
+      * == services & resources /
+        * can be configured
+        * invoke your function 
+      * see 
+        * [Lambda event source mapping](invocation-eventsourcemapping.md)
+        * [Using AWS Lambda with other services](lambda-services.md)
+    * [layers](configuration-layers.md),
     * destinations
+      * uses
+        * send details about invocation results -- to -- ANOTHER service
+        * if your function is invoked [asynchronously](invocation-async.md), or by an [event source mapping](invocation-eventsourcemapping.md) / reads from a stream -> send invocation records 
 
 ![\[A Lambda function with an Amazon S3 trigger and Amazon EventBridge destination.\]](http://docs.aws.amazon.com/lambda/latest/dg/images/console-designer.png)
 
