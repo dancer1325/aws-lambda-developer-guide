@@ -1,12 +1,46 @@
 # AWS Lambda applications<a name="deploying-lambda-apps"></a>
 
-An AWS Lambda application is a combination of Lambda functions, event sources, and other resources that work together to perform tasks\. You can use AWS CloudFormation and other tools to collect your application's components into a single package that can be deployed and managed as one resource\. Applications make your Lambda projects portable and enable you to integrate with additional developer tools, such as AWS CodePipeline, AWS CodeBuild, and the AWS Serverless Application Model command line interface \(SAM CLI\)\.
+* AWS Lambda application
+  * 👀== Lambda functions + event sources + other resources / 👀 
+    * work together -- to perform -- tasks
+    * allows
+      * making your Lambda projects portable
+      * -- integrating with -- additional developer tools
+        * _Example:_ AWS CodePipeline, AWS CodeBuild, AWS SAM CLI 
+* AWS CloudFormation & other tools
+  * can collect your application's components | 1! package / 
+    * can be deployed and managed -- as -- 1 resource
 
-The [AWS Serverless Application Repository](https://docs.aws.amazon.com/serverlessrepo/latest/devguide/) provides a collection of Lambda applications that you can deploy in your account with a few clicks\. The repository includes both ready\-to\-use applications and samples that you can use as a starting point for your own projects\. You can also submit your own projects for inclusion\.
+* [AWS Serverless Application Repository](https://docs.aws.amazon.com/serverlessrepo/latest/devguide/)
+  * == collection of Lambda applications /
+    * you can deploy | your account
+    * includes
+      * sample ones
+      * your own projects
 
-[AWS CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cfn-whatis-concepts.html) enables you to create a template that defines your application's resources and lets you manage the application as a *stack*\. You can more safely add or modify resources in your application stack\. If any part of an update fails, AWS CloudFormation automatically rolls back to the previous configuration\. With AWS CloudFormation parameters, you can create multiple environments for your application from the same template\. [AWS SAM](gettingstarted-tools.md#gettingstarted-tools-awssam) extends AWS CloudFormation with a simplified syntax focused on Lambda application development\.
+* [AWS CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cfn-whatis-concepts.html)
+  * enables you to
+    * create a template / defines your application's resources
+    * manage the application -- as a -- *stack* 
+      * more safely add or modify resources | your application stack 
+  * create multiple environments / your application | SAME template
+    * -- via -- AWS CloudFormation parameters 
+  * if any part of an update fails -> AWS CloudFormation automatically rolls back to the previous configuration
 
-The [AWS CLI](gettingstarted-tools.md#gettingstarted-tools-awscli) and [SAM CLI](gettingstarted-tools.md#gettingstarted-tools-samcli) are command line tools for managing Lambda application stacks\. In addition to commands for managing application stacks with the AWS CloudFormation API, the AWS CLI supports higher\-level commands that simplify tasks like uploading deployment packages and updating templates\. The AWS SAM CLI provides additional functionality, including validating templates and testing locally\.
+* [AWS SAM](gettingstarted-tools.md#gettingstarted-tools-awssam)
+  * 👀extends AWS CloudFormation 👀/
+    * simplified syntax
+    * focused on Lambda application development
+
+* [AWS CLI](gettingstarted-tools.md#gettingstarted-tools-awscli) & [SAM CLI](gettingstarted-tools.md#gettingstarted-tools-samcli)
+  * allows
+    * managing Lambda application stacks 
+  * AWS CLI -- supports -- higher-level commands
+    * -> simplify tasks
+      * _Example:_ uploading deployment packages & updating templates
+  * AWS SAM CLI -- provides -- additional functionality
+    * validating templates
+    * testing locally
 
 **Topics**
 + [Managing applications in the AWS Lambda console](applications-console.md)
