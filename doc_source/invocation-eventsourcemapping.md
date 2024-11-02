@@ -5,11 +5,29 @@
     * reads -- from an -- event source
       * event source -- can be --
         * stream
+          * how are they read?
+            * event source mapping creates an iterator / EACH shard | stream
+            * processes items in order / EACH shard
+            * ways to configure the event source mapping
+              * read ONLY NEW items / appear | stream
+              * start / older items
+            * processed items are NOT removed from the stream
+              * -> can be processed -- by -- OTHER functions or consumers
         * queue | batches
           * batch size maximum -- depends on the -- AWS service
           * scenarios / #ofItems < batch size
             * NOT enough items available or
             * batch is too large -- to send in -- 1 event -> has to be split up
+          * how are they read?
+            * by default, if your Lambda function returns an error -> the entire batch is reprocessed UNTIL
+              * function succeeds, or
+              * items in the batch expire
+            * ways to configure the event source mapping
+              * discard old events,
+              * restrict the number of retries,
+              * process multiple batches | parallel
+              * when it discards an event batch -> send an invocation record -- to -- ANOTHER service 
+            * If you process multiple batches in parallel, in\-order processing is still guaranteed for each partition key, but multiple partition keys in the same shard are processed simultaneously\.
     * invokes a Lambda function
   * uses
     * process items -- from a -- stream or queue | services / -- NOT invoke directly -- Lambda functions 
@@ -28,44 +46,37 @@
     + [GetEventSourceMapping](API_GetEventSourceMapping.md)
     + [UpdateEventSourceMapping](API_UpdateEventSourceMapping.md)
     + [DeleteEventSourceMapping](API_DeleteEventSourceMapping.md)
-* _Example1:_ map a Lambda function -- via AWS CLI, to a -- DynamoDB stream / -- specified by -- its ARN
-    ```
-    $ aws lambda create-event-source-mapping --function-name my-function --batch-size 500 --starting-position LATEST \
-    --event-source-arn arn:aws:dynamodb:us-east-2:123456789012:table/my-table/stream/2019-06-10T19:26:16.525
-    {
-        "UUID": "14e0db71-5d35-4eb5-b481-8945cf9d10c2",
-        "BatchSize": 500,
-        "MaximumBatchingWindowInSeconds": 0,
-        "ParallelizationFactor": 1,
-        "EventSourceArn": "arn:aws:dynamodb:us-east-2:123456789012:table/my-table/stream/2019-06-10T19:26:16.525",
-        "FunctionArn": "arn:aws:lambda:us-east-2:123456789012:function:my-function",
-        "LastModified": 1560209851.963,
-        "LastProcessingResult": "No records processed",
-        "State": "Creating",
-        "StateTransitionReason": "User action",
-        "DestinationConfig": {},
-        "MaximumRecordAgeInSeconds": 604800,
-        "BisectBatchOnFunctionError": false,
-        "MaximumRetryAttempts": 10000
-    }
-    ```
-* _Example2:_ event source mapping / 
-  * -- reads from a -- Kinesis stream
-  * if a batch of events fails ALL processing attempts -> the event source mapping -- sends details about the batch to an -- SQS queue
+  * _Example1:_ map a Lambda function -- via AWS CLI, to a -- DynamoDB stream / -- specified by -- its ARN
+      ```
+      $ aws lambda create-event-source-mapping --function-name my-function --batch-size 500 --starting-position LATEST \
+      --event-source-arn arn:aws:dynamodb:us-east-2:123456789012:table/my-table/stream/2019-06-10T19:26:16.525
+      {
+          "UUID": "14e0db71-5d35-4eb5-b481-8945cf9d10c2",
+          "BatchSize": 500,
+          "MaximumBatchingWindowInSeconds": 0,
+          "ParallelizationFactor": 1,
+          "EventSourceArn": "arn:aws:dynamodb:us-east-2:123456789012:table/my-table/stream/2019-06-10T19:26:16.525",
+          "FunctionArn": "arn:aws:lambda:us-east-2:123456789012:function:my-function",
+          "LastModified": 1560209851.963,
+          "LastProcessingResult": "No records processed",
+          "State": "Creating",
+          "StateTransitionReason": "User action",
+          "DestinationConfig": {},
+          "MaximumRecordAgeInSeconds": 604800,
+          "BisectBatchOnFunctionError": false,
+          "MaximumRetryAttempts": 10000
+      }
+      ```
+  * _Example2:_ event source mapping / 
+    * -- reads from a -- Kinesis stream
+    * if a batch of events fails ALL processing attempts -> the event source mapping -- sends details about the batch to an -- SQS queue
 
-    ![\[\]](http://docs.aws.amazon.com/lambda/latest/dg/images/features-eventsourcemapping.png)
+      ![\[\]](http://docs.aws.amazon.com/lambda/latest/dg/images/features-eventsourcemapping.png)
+  * supported [destinations](invocation-async.md#invocation-async-destinations) -- for -- event source mappings
+    + **Amazon SQS** queue\.
+    + **Amazon SNS** topic\.
 
 * TODO:
-The event batch is the event that Lambda sends to the function\. It is a batch of records or messages compiled from the items that the event source mapping reads from a stream or queue\. Batch size and other settings only apply to the event batch\.
-
-For streams, an event source mapping creates an iterator for each shard in the stream and processes items in each shard in order\. You can configure the event source mapping to read only new items that appear in the stream, or to start with older items\. Processed items aren't removed from the stream and can be processed by other functions or consumers\.
-
-By default, if your function returns an error, the entire batch is reprocessed until the function succeeds, or the items in the batch expire\. To ensure in\-order processing, processing for the affected shard is paused until the error is resolved\. You can configure the event source mapping to discard old events, restrict the number of retries, or process multiple batches in parallel\. If you process multiple batches in parallel, in\-order processing is still guaranteed for each partition key, but multiple partition keys in the same shard are processed simultaneously\.
-
-You can also configure the event source mapping to send an invocation record to another service when it discards an event batch\. Lambda supports the following [destinations](invocation-async.md#invocation-async-destinations) for event source mappings\.
-+ **Amazon SQS** – An SQS queue\.
-+ **Amazon SNS** – An SNS topic\.
-
 The invocation record contains details about the failed event batch in JSON format\.
 
 The following example shows an invocation record for a Kinesis stream\.
