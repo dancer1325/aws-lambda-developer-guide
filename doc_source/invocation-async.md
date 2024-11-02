@@ -90,82 +90,82 @@ When an invocation event exceeds the maximum age or fails all retry attempts, La
 
 ## Configuring destinations for asynchronous invocation<a name="invocation-async-destinations"></a>
 
+* goal
+  * send an invocation record -- to -- ANOTHER service
+* supported [destinations](#invocation-async-destinations) -- for -- asynchronous invocation
+  + **Amazon SQS** queue
+    + requirements
+      + add [sqs:SendMessage](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/API_SendMessage.html) | function's [execution role](lambda-intro-execution-role.md)
+  + **Amazon SNS** topic
+    + requirements
+      + add [sns:Publish](https://docs.aws.amazon.com/sns/latest/api/API_Publish.html) | function's [execution role](lambda-intro-execution-role.md)
+  + **AWS Lambda** function
+    + requirements
+      + add [lambda:InvokeFunction](https://docs.aws.amazon.com/lambda/latest/dg/API_Invoke.html) | function's [execution role](lambda-intro-execution-role.md)
+  + **Amazon EventBridge** event bus
+    + requirements
+      + add [events:PutEvents](https://docs.aws.amazon.com/eventbridge/latest/APIReference/API_PutEvents.html) | function's [execution role](lambda-intro-execution-role.md)
+* invocation record -- contains details -- about the
+  * request | JSON format
+  * response | JSON format
+* uses
+  * separate destinations for events /
+    * processed successfully
+    * fail ALL processing attempts 
+* entities | configure destinations
+  * function,
+  * version,
+  * alias
+* _Example:_ function / is processing asynchronous invocations
+  * if the function returns a success response OR exits without throwing an error -> Lambda -- sends a record of the invocation to an -- EventBridge event bus
+  * if an event fails ALL processing attempts -> Lambda -- sends an invocation record to an -- Amazon SQS queue
 
-You can also configure Lambda to send an invocation record to another service\. Lambda supports the following [destinations](#invocation-async-destinations) for asynchronous invocation\.
-+ **Amazon SQS** – A standard SQS queue\.
-+ **Amazon SNS** – An SNS topic\.
-+ **AWS Lambda** – A Lambda function\.
-+ **Amazon EventBridge** – An EventBridge event bus\.
+    ![\[\]](http://docs.aws.amazon.com/lambda/latest/dg/images/features-destinations.png)
+* **How to configure a destination for asynchronous invocation records | Lambda function designer?**
+  1. TODO:Choose a function\.
+  2. Under **Designer**, choose **Add destination**\.
+  3. For **Source**, choose **Asynchronous invocation**\.
+  4. For **Condition**, choose from the following options:
+     + **On failure** – Send a record when the event fails all processing attempts or exceeds the maximum age\.
+     + **On success** – Send a record when the function successfully processes an asynchronous invocation\.
+  5. For **Destination type**, choose the type of resource that receives the invocation record\.
+  6. For **Destination**, choose a resource\.
+* How does it work?
+  * when an invocation -- matches the -- condition -> Lambda -- sends the -- invocation record 
+    * invocation record
+      * == JSON document / has details about the
+        * event
+        * response
+        * reason / it was sent
+    * _Example:_ invocation record for an event / failed 3 processing attempts -- due to a -- function error
 
-The invocation record contains details about the request and response in JSON format\. You can configure separate destinations for events that are processed successfully, and events that fail all processing attempts\. 
-
-To send records of asynchronous invocations to another service, add a destination to your function\. You can configure separate destinations for events that fail processing and events that are successfully processed\. Like error handling settings, you can configure destinations on a function, a version, or an alias\.
-
-The following example shows a function that is processing asynchronous invocations\. When the function returns a success response or exits without throwing an error, Lambda sends a record of the invocation to an EventBridge event bus\. When an event fails all processing attempts, Lambda sends an invocation record to an Amazon SQS queue\.
-
-![\[\]](http://docs.aws.amazon.com/lambda/latest/dg/images/features-destinations.png)
-
-To send events to a destination, your function needs additional permissions\. Add a policy with the required permissions to your function's [execution role](lambda-intro-execution-role.md)\. Each destination service requires a different permission, as follows:
-+ **Amazon SQS** – [sqs:SendMessage](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/API_SendMessage.html) 
-+ **Amazon SNS** – [sns:Publish](https://docs.aws.amazon.com/sns/latest/api/API_Publish.html) 
-+ **Lambda** – [lambda:InvokeFunction](https://docs.aws.amazon.com/lambda/latest/dg/API_Invoke.html)
-+ **EventBridge** – [events:PutEvents](https://docs.aws.amazon.com/eventbridge/latest/APIReference/API_PutEvents.html)
-
-Add destinations to your function in the Lambda console's function designer\.
-
-**To configure a destination for asynchronous invocation records**
-
-1. Open the Lambda console [Functions page](https://console.aws.amazon.com/lambda/home#/functions)\.
-
-1. Choose a function\.
-
-1. Under **Designer**, choose **Add destination**\.
-
-1. For **Source**, choose **Asynchronous invocation**\.
-
-1. For **Condition**, choose from the following options:
-   + **On failure** – Send a record when the event fails all processing attempts or exceeds the maximum age\.
-   + **On success** – Send a record when the function successfully processes an asynchronous invocation\.
-
-1. For **Destination type**, choose the type of resource that receives the invocation record\.
-
-1. For **Destination**, choose a resource\.
-
-1. Choose **Save**\.
-
-When an invocation matches the condition, Lambda sends a JSON document with details about the invocation to the destination\. The following example shows an invocation record for an event that failed three processing attempts due to a function error\.
-
-**Example invocation record**  
-
-```
-{
-    "version": "1.0",
-    "timestamp": "2019-11-14T18:16:05.568Z",
-    "requestContext": {
-        "requestId": "e4b46cbf-b738-xmpl-8880-a18cdf61200e",
-        "functionArn": "arn:aws:lambda:us-east-2:123456789012:function:my-function:$LATEST",
-        "condition": "RetriesExhausted",
-        "approximateInvokeCount": 3
-    },
-    "requestPayload": {
-        "ORDER_IDS": [
-            "9e07af03-ce31-4ff3-xmpl-36dce652cb4f",
-            "637de236-e7b2-464e-xmpl-baf57f86bb53",
-            "a81ddca6-2c35-45c7-xmpl-c3a03a31ed15"
-        ]
-    },
-    "responseContext": {
-        "statusCode": 200,
-        "executedVersion": "$LATEST",
-        "functionError": "Unhandled"
-    },
-    "responsePayload": {
-        "errorMessage": "RequestId: e4b46cbf-b738-xmpl-8880-a18cdf61200e Process exited before completing request"
-    }
-}
-```
-
-The invocation record contains details about the event, the response, and the reason that the record was sent\.
+        ```
+        {
+            "version": "1.0",
+            "timestamp": "2019-11-14T18:16:05.568Z",
+            "requestContext": {
+                "requestId": "e4b46cbf-b738-xmpl-8880-a18cdf61200e",
+                "functionArn": "arn:aws:lambda:us-east-2:123456789012:function:my-function:$LATEST",
+                "condition": "RetriesExhausted",
+                "approximateInvokeCount": 3
+            },
+            "requestPayload": {
+                "ORDER_IDS": [
+                    "9e07af03-ce31-4ff3-xmpl-36dce652cb4f",
+                    "637de236-e7b2-464e-xmpl-baf57f86bb53",
+                    "a81ddca6-2c35-45c7-xmpl-c3a03a31ed15"
+                ]
+            },
+            "responseContext": {
+                "statusCode": 200,
+                "executedVersion": "$LATEST",
+                "functionError": "Unhandled"
+            },
+            "responsePayload": {
+                "errorMessage": "RequestId: e4b46cbf-b738-xmpl-8880-a18cdf61200e Process exited before completing request"
+            }
+        }
+        ```
 
 ## Asynchronous invocation configuration API<a name="invocation-async-api"></a>
 
