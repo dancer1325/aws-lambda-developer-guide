@@ -61,6 +61,7 @@
 ## Event<a name="gettingstarted-concepts-event"></a>
 
 * 👀== JSON formatted document / contains data -- for being processed by a -- function 👀
+  * hundreds or thousands of items can be contained / EACH event
   * Lambda runtime
     * converts the event -- to an -- object
     * passes it -- to your -- function code
@@ -109,6 +110,12 @@
 ## Trigger<a name="gettingstarted-concepts-trigger"></a>
 
 * == AWS resource (event source mapping, application, ...) OR configuration (AWS service, ...) / invokes a Lambda function
+  * -- in response to --
+    * lifecycle events,
+    * external requests,
+    * schedule
+  * \>=1 / Lambda can be configured
+    * 👀EACH trigger acts independently 👀
 * see
   * [Invoking AWS Lambda functions](lambda-invocation.md)
   * [Using AWS Lambda with other services](lambda-services.md)
