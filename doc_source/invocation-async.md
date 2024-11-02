@@ -1,52 +1,75 @@
 # Asynchronous invocation<a name="invocation-async"></a>
 
-Several AWS services, such as Amazon Simple Storage Service \(Amazon S3\) and Amazon Simple Notification Service \(Amazon SNS\), invoke functions asynchronously to process events\. When you invoke a function asynchronously, you don't wait for a response from the function code\. You hand off the event to Lambda and Lambda handles the rest\. You can configure how Lambda handles errors, and can send invocation records to a downstream resource to chain together components of your application\.
+* use cases
+  * AWS services / -- invoke asynchronously -- Lambda functions -- to process -- events
+    * Amazon S3
+    * Amazon SNS
+  * other ways, -- via --
+    * AWS CLI
+    * AWS SDK
+* how does it work?
+  * Lambda 
+    * places the event | queue
+    * if it's placed -> returns a success response WITHOUT additional information
+  * separate process
+    * reads events | queue
+    * sends them -- to -- your function
+  * if the function returns an error 
+    * use cases
+      * by the function's code
+      * by the function's runtime (_Example:_ timeouts) 
+    * -> by default, Lambda attempts to run it 2 more times / 
+      * 1@ attempt -- 1 minute -- 2@ attempt
+      * 2@ attempt -- 2 minutes -- 3@ attempt
+* _Example1:_ AWS CLI / set `--invocation-type Event` (make async invocation)
 
-The following diagram shows clients invoking a Lambda function asynchronously\. Lambda queues the events before sending them to the function\.
+    ```
+    $ aws lambda invoke --function-name my-function  --invocation-type Event --payload '{ "key": "value" }' response.json
+    {
+      "StatusCode": 202
+    }
+    ```
 
-![\[\]](http://docs.aws.amazon.com/lambda/latest/dg/images/features-async.png)
+    output file \(`response.json`\) does NOT contain ANY information, BUT STILL created
 
-For asynchronous invocation, Lambda places the event in a queue and returns a success response without additional information\. A separate process reads events from the queue and sends them to your function\. To invoke a function asynchronously, set the invocation type parameter to `Event`\.
+* _Example2:_ 
+  * client / -- invoke asynchronously -- Lambda function
+  * Lambda function -- queues the -- events | BEFORE sending them to the function
 
-```
-$ aws lambda invoke --function-name my-function  --invocation-type Event --payload '{ "key": "value" }' response.json
-{
-    "StatusCode": 202
-}
-```
+      ![\[\]](http://docs.aws.amazon.com/lambda/latest/dg/images/features-async.png)
 
-The output file \(`response.json`\) doesn't contain any information, but is still created when you run this command\. If Lambda isn't able to add the event to the queue, the error message appears in the command output\.
+* concurrency
+  * 👀if the Lambda function does NOT have enough concurrency available to process all events -> ADDITIONAL requests are throttled 👀
+    * if throttling errors \(429\) or system errors \(500\-series\) -> Lambda
+      * returns the event -- to the -- queue
+      * retries
+        * up to 6 hours
+        * interval -- increases -- exponentially 
+          * [1 second, < 5 minutes (if the queue is backed up -> longer) ]
+    * see [blog](https://aws.amazon.com/blogs/compute/understanding-aws-lambdas-invoke-throttle-limits/)
 
-Lambda manages the function's asynchronous event queue and attempts to retry on errors\. If the function returns an error, Lambda attempts to run it two more times, with a one\-minute wait between the first two attempts, and two minutes between the second and third attempts\. Function errors include errors returned by the function's code and errors returned by the function's runtime, such as timeouts\.
-
-![\[\]](http://docs.aws.amazon.com/lambda/latest/dg/images/invocation-types-retries.png)
-
-If the function doesn't have enough concurrency available to process all events, additional requests are throttled\. For throttling errors \(429\) and system errors \(500\-series\), Lambda returns the event to the queue and attempts to run the function again for up to 6 hours\. The retry interval increases exponentially from 1 second after the first attempt to a maximum of 5 minutes\. However, it might be longer if the queue is backed up\. Lambda also reduces the rate at which it reads events from the queue\.
-
-The following example shows an event that was successfully added to the queue, but is still pending one hour later due to throttling\.
-
-![\[\]](http://docs.aws.amazon.com/lambda/latest/dg/images/invocation-types-throttle.png)
-
-Even if your function doesn't return an error, it's possible for it to receive the same event from Lambda multiple times because the queue itself is eventually consistent\. If the function can't keep up with incoming events, events might also be deleted from the queue without being sent to the function\. Ensure that your function code gracefully handles duplicate events, and that you have enough concurrency available to handle all invocations\.
-
-When the queue is backed up, new events might age out before Lambda has a chance to send them to your function\. When an event expires or fails all processing attempts, Lambda discards it\. You can [configure error handling](#invocation-async-errors) for a function to reduce the number of retries that Lambda performs, or to discard unprocessed events more quickly\.
-
-You can also configure Lambda to send an invocation record to another service\. Lambda supports the following [destinations](#invocation-async-destinations) for asynchronous invocation\.
-+ **Amazon SQS** – A standard SQS queue\.
-+ **Amazon SNS** – An SNS topic\.
-+ **AWS Lambda** – A Lambda function\.
-+ **Amazon EventBridge** – An EventBridge event bus\.
-
-The invocation record contains details about the request and response in JSON format\. You can configure separate destinations for events that are processed successfully, and events that fail all processing attempts\. Alternatively, you can configure an SQS queue or SNS topic as a [dead\-letter queue](#dlq) for discarded events\. For dead\-letter queues, Lambda only sends the content of the event, without details about the response\.
+* duplicated SAME event -- from -- Lambda
+  * Reason: 🧠the queue itself is eventually consistent 🧠
+  * NOT necessary that function returns an error
+  * if the function can NOT keep up with incoming events -> events / NOT sent to the function -- might be -- deleted
+  * actions to take
+    * your function code must gracefully handle duplicate events
+    * enough concurrency -- to handle -- ALL invocations
 
 **Topics**
 + [Configuring error handling for asynchronous invocation](#invocation-async-errors)
 + [Configuring destinations for asynchronous invocation](#invocation-async-destinations)
 + [Asynchronous invocation configuration API](#invocation-async-api)
-+ [AWS Lambda function dead\-letter queues](#dlq)
++ [AWS Lambda function dead\-letter queues](#aws-lambda-function-dead-letter-queuesa-namedlqa)
 
-## Configuring error handling for asynchronous invocation<a name="invocation-async-errors"></a>
+## Configuring error handling -- for -- asynchronous invocation<a name="invocation-async-errors"></a>
 
+* ways to proceed
+  * send invocation records -- to a -- downstream resource
+  * reduce the number of retries / Lambda performs
+  * discard unprocessed events more quickly
+
+* TODO:
 Use the Lambda console to configure error handling settings on a function, a version, or an alias\.
 
 **To configure error handling**
@@ -66,6 +89,15 @@ Use the Lambda console to configure error handling settings on a function, a ver
 When an invocation event exceeds the maximum age or fails all retry attempts, Lambda discards it\. To retain a copy of discarded events, configure a failed\-event destination\.
 
 ## Configuring destinations for asynchronous invocation<a name="invocation-async-destinations"></a>
+
+
+You can also configure Lambda to send an invocation record to another service\. Lambda supports the following [destinations](#invocation-async-destinations) for asynchronous invocation\.
++ **Amazon SQS** – A standard SQS queue\.
++ **Amazon SNS** – An SNS topic\.
++ **AWS Lambda** – A Lambda function\.
++ **Amazon EventBridge** – An EventBridge event bus\.
+
+The invocation record contains details about the request and response in JSON format\. You can configure separate destinations for events that are processed successfully, and events that fail all processing attempts\. 
 
 To send records of asynchronous invocations to another service, add a destination to your function\. You can configure separate destinations for events that fail processing and events that are successfully processed\. Like error handling settings, you can configure destinations on a function, a version, or an alias\.
 
@@ -183,6 +215,8 @@ $ aws lambda update-function-event-invoke-config --function-name error \
 ## AWS Lambda function dead\-letter queues<a name="dlq"></a>
 
 As an alternative to an [on\-failure destination](#invocation-async-destinations), you can configure your function with a dead\-letter queue to save discarded events for further processing\. A dead\-letter queue acts the same as an on\-failure destination in that it is used when an event fails all processing attempts or expires without being processed\. However, a dead\-letter queue is part of a function's version\-specific configuration, so it is locked in when you publish a version\. On\-failure destinations also support additional targets and include details about the function's response in the invocation record\.
+
+Alternatively, you can configure an SQS queue or SNS topic as a [dead\-letter queue](#dlq) for discarded events\. For dead\-letter queues, Lambda only sends the content of the event, without details about the response\.
 
 If you don't have a queue or topic, create one\. Choose the target type that matches your use case\.
 + [Amazon SQS queue](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-create-queue.html) – A queue holds failed events until they're retrieved\. You can retrieve events manually, or you can [configure Lambda to read from the queue](with-sqs.md) and invoke a function\.
