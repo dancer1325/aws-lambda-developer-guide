@@ -1,25 +1,32 @@
-# Configuring a Lambda function to access resources in a VPC<a name="configuration-vpc"></a>
+# Configuring a Lambda function -- to access -- resources | VPC<a name="configuration-vpc"></a>
 
-You can configure a function to connect to private subnets in a virtual private cloud \(VPC\) in your account\. Use Amazon Virtual Private Cloud \(Amazon VPC\) to create a private network for resources such as databases, cache instances, or internal services\. Connect your function to the VPC to access private resources during execution\.
+* Connect a Lambda function -- to -- private subnets | VPC
+  * Reason of use Amazon VPC: 🧠 create a private network -- for -- resources (_Example:_ databases, cache instances, or internal services) 🧠
+  * uses
+    * 👀lambda function -- can access to -- private resources | during execution 👀
+  * -> 👀Lambda creates an [elastic network interface](https://docs.aws.amazon.com/vpc/latest/userguide/VPC_ElasticNetworkInterfaces.html) / EACH combination of security group + subnet | your function's VPC configuration 👀
+    * can take about a minute / during this time
+      *  👀 NOT possible to perform additional operations / target the function 👀
+        * _Example: [creating versions](configuration-versions.md) or updating the function's code
+  * steps
+    1. Open the [Lambda console](https://console.aws.amazon.com/lambda)
+    2. Choose a function
+    3. Under **VPC**, choose **Edit**
+    4. Choose **Custom VPC**
+    5. Choose a VPC, subnets, and security groups\.
+       1. if your function needs internet access -> use [NAT](#vpc-internet)
+       2. if you connect a function -- to a -- public subnet -> does NOT give
+          1. internet access or
+          2. public IP address
+    6. Choose **Save**\
 
-**To connect a function to a VPC**
+* Lambda function states
+  * if new functions, NOT possible to invoke the function, until its state transitions from `Pending` -- to -- `Active` 
+  * if existing functions, you can STILL invoke the old version
+    * while the update is in progress 
+  * see [Monitoring the state of a function with the Lambda API](functions-states.md)\.
 
-1. Open the [Lambda console](https://console.aws.amazon.com/lambda)\.
-
-1. Choose a function\.
-
-1. Under **VPC**, choose **Edit**\.
-
-1. Choose **Custom VPC**\.
-
-1. Choose a VPC, subnets, and security groups\.
-**Note**  
-Connect your function to private subnets to access private resources\. If your function needs internet access, use [NAT](#vpc-internet)\. Connecting a function to a public subnet does not give it internet access or a public IP address\.
-
-1. Choose **Save**\.
-
-When you connect a function to a VPC, Lambda creates an [elastic network interface](https://docs.aws.amazon.com/vpc/latest/userguide/VPC_ElasticNetworkInterfaces.html) for each combination of security group and subnet in your function's VPC configuration\. This process can take about a minute\. During this time, you cannot perform additional operations that target the function, such as [creating versions](configuration-versions.md) or updating the function's code\. For new functions, you can't invoke the function until its state transitions from `Pending` to `Active`\. For existing functions, you can still invoke the old version while the update is in progress\. For more information about function states, see [Monitoring the state of a function with the Lambda API](functions-states.md)\.
-
+* TODO:
 Multiple functions connected to the same subnets share network interfaces, so connecting additional functions to a subnet that already has a Lambda\-managed network interface is much quicker\. However, Lambda might create additional network interfaces if you have many functions or very busy functions\.
 
 If your functions are not active for a long period of time, Lambda reclaims its network interfaces, and the function becomes `Idle`\. Invoke an idle function to reactivate it\. The first invocation fails and the function enters a pending state again until the network interface is available\.
